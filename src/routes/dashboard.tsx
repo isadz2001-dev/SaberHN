@@ -26,6 +26,7 @@ function Dashboard() {
   const { user } = useAuth();
   const store = useStore();
   const [tab, setTab] = useState<TabKey>("explore");
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { email, fullName, age, role } = user ?? {};
   useEffect(() => {
     if (email && fullName && age && role) {
@@ -37,6 +38,15 @@ function Dashboard() {
   if (!user) return <Navigate to="/login" />;
   const isInstructor = user.role === "instructor" || user.role === "instructor_pro";
   const roleLabel = user.role === "instructor_pro" ? "Instructor Pro" : user.role === "instructor" ? "Instructor" : "Estudiante";
+
+  if (selectedCourse) {
+    return (
+      <CourseDetailPage
+        course={selectedCourse}
+        onBack={() => setSelectedCourse(null)}
+      />
+    );
+  }
 
   const titles: Record<TabKey, { t: string; s: string }> = {
     explore: { t: `Hola, ${user.fullName.split(" ")[0]}`, s: "Explora nuevos cursos" },
@@ -54,7 +64,7 @@ function Dashboard() {
       <MobileTopBar title={titles[tab].t} subtitle={titles[tab].s} onHome={() => setTab("explore")} />
       <main className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
         {tab === "explore" && <ExploreTab />}
-        {tab === "learning" && <LearningTab />}
+        {tab === "learning" && <LearningTab onSelectCourse={setSelectedCourse} />}
         {tab === "teach" && isInstructor && <TeachTab />}
         {tab === "plans" && isInstructor && <PlansTab />}
         {tab === "profile" && <ProfileTab />}
@@ -191,10 +201,9 @@ function ExploreTab() {
   );
 }
 
-function LearningTab() {
+function LearningTab({ onSelectCourse }: { onSelectCourse: (c: Course) => void }) {
   const { user } = useAuth();
   const store = useStore();
-  const [selected, setSelected] = useState<Course | null>(null);
   if (!user) return null;
   const mine = store.allCourses().filter(c => store.isEnrolled(c.id, user.email));
   if (mine.length === 0) {
@@ -207,28 +216,253 @@ function LearningTab() {
     );
   }
   return (
+    <div className="grid gap-3">
+      {mine.map(c => (
+        <Card key={c.id} className="overflow-hidden transition active:scale-[0.98]" onClick={() => onSelectCourse(c)}>
+          <CardContent className="flex items-center gap-3 p-3">
+            <div className="h-16 w-16 shrink-0 rounded-lg bg-cover bg-center" style={{ backgroundImage: `url(${c.image})` }} />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">{c.category}</p>
+              <p className="truncate font-semibold leading-tight">{c.title}</p>
+              <p className="truncate text-xs text-muted-foreground">{c.flexible ? "Horarios flexibles" : c.schedule}</p>
+              {store.live[c.id]?.active && (
+                <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                  <Radio className="h-3 w-3 animate-pulse" /> En vivo ahora
+                </span>
+              )}
+            </div>
+            <ChevronLeft className="h-5 w-5 shrink-0 rotate-180 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function CourseDetailPage({ course, onBack }: { course: Course; onBack: () => void }) {
+  const { user } = useAuth();
+  const store = useStore();
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  if (!user) return null;
+
+  const isEnrolled = store.isEnrolled(course.id, user.email);
+  const enrolledList = store.enrollments[course.id] ?? [];
+  const isOwner = course.instructorEmail === user.email;
+  const comments = store.comments[course.id] ?? [];
+  const live = store.live[course.id];
+  const { avg, count } = store.averageRating(course.id);
+  const myRating = store.ratings[course.id]?.[user.email] ?? 0;
+
+  const submitComment = () => {
+    const t = commentText.trim();
+    if (!t) return;
+    store.addComment({ courseId: course.id, email: user.email, name: user.fullName, text: t });
+    setCommentText("");
+  };
+
+  return (
     <>
-      <div className="grid gap-3">
-        {mine.map(c => (
-          <Card key={c.id} className="overflow-hidden transition active:scale-[0.98]" onClick={() => setSelected(c)}>
-            <CardContent className="flex items-center gap-3 p-3">
-              <div className="h-16 w-16 shrink-0 rounded-lg bg-cover bg-center" style={{ backgroundImage: `url(${c.image})` }} />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs text-muted-foreground">{c.category}</p>
-                <p className="truncate font-semibold leading-tight">{c.title}</p>
-                <p className="truncate text-xs text-muted-foreground">{c.flexible ? "Horarios flexibles" : c.schedule}</p>
-                {store.live[c.id]?.active && (
-                  <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-red-600">
-                    <Radio className="h-3 w-3 animate-pulse" /> En vivo ahora
-                  </span>
-                )}
+      <div className="app-shell flex flex-col">
+        {/* Sticky header */}
+        <header
+          className="sticky top-0 z-30 px-5 pb-4 pt-12 text-white pt-safe"
+          style={{ background: "linear-gradient(160deg, #f97316 0%, #ea580c 100%)" }}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 transition active:scale-90"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-base font-bold leading-tight">{course.title}</h1>
+              <p className="truncate text-xs text-white/80">{course.category} · {course.level}</p>
+            </div>
+            {live?.active && (
+              <span className="flex items-center gap-1 rounded-full bg-red-500 px-2.5 py-1 text-xs font-bold">
+                <Radio className="h-3 w-3 animate-pulse" />En vivo
+              </span>
+            )}
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto pb-8">
+          {/* Course image */}
+          <div className="h-44 w-full bg-cover bg-center" style={{ backgroundImage: `url(${course.image})` }} />
+
+          {/* Info grid */}
+          <div className="m-4 grid grid-cols-2 gap-3 rounded-2xl border bg-card p-4 text-sm shadow-sm">
+            <InfoCell icon={<Clock className="h-4 w-4" />} label="Duración" value={`${course.hours} h`} />
+            <InfoCell icon={<CalendarClock className="h-4 w-4" />} label="Horario" value={course.flexible ? "Flexible" : course.schedule} />
+            <InfoCell icon={<Users className="h-4 w-4" />} label="Estudiantes" value={`${enrolledList.length || course.students}`} />
+            <InfoCell icon={<Star className="h-4 w-4" />} label="Rating" value={count > 0 ? `${avg.toFixed(1)} (${count})` : `${course.rating ?? "—"}`} />
+          </div>
+
+          {/* Tabs */}
+          <div className="px-4">
+            <Tabs defaultValue="content">
+              <div className="no-scrollbar overflow-x-auto">
+                <TabsList className="w-max min-w-full justify-start">
+                  <TabsTrigger value="content"><PlayCircle className="mr-1.5 h-4 w-4" />Contenido</TabsTrigger>
+                  <TabsTrigger value="videos"><Video className="mr-1.5 h-4 w-4" />Videos</TabsTrigger>
+                  <TabsTrigger value="tasks"><FileText className="mr-1.5 h-4 w-4" />Tareas</TabsTrigger>
+                  <TabsTrigger value="live"><Radio className="mr-1.5 h-4 w-4" />Clase en vivo</TabsTrigger>
+                  <TabsTrigger value="comments"><MessageSquare className="mr-1.5 h-4 w-4" />Foro</TabsTrigger>
+                  <TabsTrigger value="rate"><Star className="mr-1.5 h-4 w-4" />Valoración</TabsTrigger>
+                  {isOwner && <TabsTrigger value="students"><Users className="mr-1.5 h-4 w-4" />Estudiantes</TabsTrigger>}
+                  <TabsTrigger value="about">Info</TabsTrigger>
+                </TabsList>
               </div>
-              <ChevronLeft className="h-5 w-5 shrink-0 rotate-180 text-muted-foreground" />
-            </CardContent>
-          </Card>
-        ))}
+
+              <TabsContent value="content" className="mt-4 space-y-2">
+                {course.lessons.map((l, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-8 w-8 place-items-center rounded-full bg-muted text-xs font-semibold">{i + 1}</span>
+                      <div>
+                        <p className="text-sm font-medium">{l.title}</p>
+                        <p className="text-xs text-muted-foreground">{l.duration}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost">Ver</Button>
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="videos" className="mt-4 grid grid-cols-1 gap-3">
+                {course.lessons.map((l, i) => (
+                  <div key={i} className="overflow-hidden rounded-lg border">
+                    <div className="grid aspect-video place-items-center bg-muted text-primary">
+                      <PlayCircle className="h-10 w-10" />
+                    </div>
+                    <div className="p-3">
+                      <p className="text-sm font-medium">{l.title}</p>
+                      <p className="text-xs text-muted-foreground">{l.duration}</p>
+                    </div>
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="tasks" className="mt-4 space-y-3">
+                {course.tasks.map((t, i) => (
+                  <div key={i} className="rounded-lg border p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold">{t.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{t.description}</p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0">Entrega en {t.dueInDays}d</Badge>
+                    </div>
+                    <Button size="sm" variant="outline" className="mt-3">Entregar tarea</Button>
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="live" className="mt-4">
+                <LivePanel course={course} isOwner={isOwner} />
+              </TabsContent>
+
+              <TabsContent value="comments" className="mt-4 space-y-3">
+                <div className="rounded-lg border p-3">
+                  <Textarea
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    placeholder="Escribe un comentario o pregunta…"
+                    rows={2}
+                    maxLength={500}
+                  />
+                  <div className="mt-2 flex justify-end">
+                    <Button size="sm" onClick={submitComment}><Send className="mr-1.5 h-3.5 w-3.5" />Publicar</Button>
+                  </div>
+                </div>
+                {comments.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground">Sé el primero en comentar.</p>
+                )}
+                {comments.slice().reverse().map(c => (
+                  <div key={c.id} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold">{c.name} {c.email === course.instructorEmail && <Badge variant="secondary" className="ml-1">Instructor</Badge>}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(c.at).toLocaleString("es-HN")}</p>
+                      </div>
+                      {(isOwner || c.email === user.email) && (
+                        <Button size="icon" variant="ghost" onClick={() => store.removeComment(course.id, c.id)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm">{c.text}</p>
+                  </div>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="rate" className="mt-4">
+                <RatingPanel courseId={course.id} isOwner={isOwner} myRating={myRating} avg={avg} count={count} />
+              </TabsContent>
+
+              {isOwner && (
+                <TabsContent value="students" className="mt-4 space-y-2">
+                  <p className="text-sm text-muted-foreground">{enrolledList.length} estudiante(s) inscritos</p>
+                  {enrolledList.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay estudiantes inscritos.</p>}
+                  {enrolledList.map(email => {
+                    const p = store.profiles[email];
+                    return (
+                      <div key={email} className="flex items-center justify-between rounded-lg border p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="grid h-10 w-10 place-items-center rounded-full bg-muted"><UserCircle2 className="h-6 w-6" /></div>
+                          <div>
+                            <p className="text-sm font-medium">{p?.fullName ?? email}</p>
+                            <p className="text-xs text-muted-foreground">{email}{p?.age ? ` · ${p.age} años` : ""}</p>
+                          </div>
+                        </div>
+                        <RemoveStudentButton courseId={course.id} email={email} name={p?.fullName ?? email} />
+                      </div>
+                    );
+                  })}
+                </TabsContent>
+              )}
+
+              <TabsContent value="about" className="mt-4 space-y-3 text-sm">
+                <p className="text-muted-foreground">{course.longDescription}</p>
+                <div>
+                  <h4 className="font-semibold">Instructor</h4>
+                  <p className="text-muted-foreground">{course.instructor} — {course.instructorBio}</p>
+                </div>
+              </TabsContent>
+
+              {isEnrolled && !isOwner && (
+                <div className="mt-6">
+                  <Button variant="destructive" className="w-full" onClick={() => setConfirmLeave(true)}>
+                    <LogOut className="mr-2 h-4 w-4" />Darme de baja del curso
+                  </Button>
+                </div>
+              )}
+            </Tabs>
+          </div>
+        </main>
       </div>
-      <CourseDialog course={selected} open={!!selected} onOpenChange={o => !o && setSelected(null)} />
+
+      <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}>
+        <AlertDialogContent className="mx-4 max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro de darte de baja del curso?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Perderás el acceso a los contenidos, videos y tareas de <strong>{course.title}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { store.unenroll(course.id, user.email); setConfirmLeave(false); onBack(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sí, darme de baja
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
