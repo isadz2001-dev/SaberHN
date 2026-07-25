@@ -83,8 +83,7 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login"><Button variant="ghost" size="sm">Ingresar</Button></Link>
-              <Link to="/register"><Button size="sm">Registrarme</Button></Link>
+              <Link to="/login"><Button size="sm">Ingresar</Button></Link>
             </>
           )}
         </nav>

@@ -28,26 +28,37 @@ const USERS_KEY = "es_users";
 const SESSION_KEY = "es_session";
 const DEMO_SEEDED_KEY = "es_demo_seeded";
 
-const DEMO_USER: StoredUser = {
-  email: "demo@saberhn.hn",
-  fullName: "Usuario Demo",
-  age: 25,
-  role: "student",
-  password: "demo1234",
-};
+const DEMO_USERS: StoredUser[] = [
+  {
+    email: "instructor@saberhn.hn",
+    fullName: "Carlos Mendoza",
+    age: 34,
+    role: "instructor",
+    password: "instructor1234",
+  },
+  {
+    email: "estudiante@saberhn.hn",
+    fullName: "María Fernández",
+    age: 22,
+    role: "student",
+    password: "estudiante1234",
+  },
+];
 
 function readUsers(): StoredUser[] {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || "[]"); } catch { return []; }
 }
 function writeUsers(u: StoredUser[]) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 
-function seedDemoUser() {
+function seedDemoUsers() {
   if (localStorage.getItem(DEMO_SEEDED_KEY)) return;
   const users = readUsers();
-  if (!users.some(u => u.email.toLowerCase() === DEMO_USER.email.toLowerCase())) {
-    users.push(DEMO_USER);
-    writeUsers(users);
+  for (const demo of DEMO_USERS) {
+    if (!users.some(u => u.email.toLowerCase() === demo.email.toLowerCase())) {
+      users.push(demo);
+    }
   }
+  writeUsers(users);
   localStorage.setItem(DEMO_SEEDED_KEY, "1");
 }
 
@@ -55,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    seedDemoUser();
+    seedDemoUsers();
     const s = localStorage.getItem(SESSION_KEY);
     if (s) {
       const found = readUsers().find(u => u.email === s);
@@ -80,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login: (email, password) => {
       const users = readUsers();
       const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-      if (!found) return { ok: false, error: "No tiene cuenta o ingresó el nombre/contraseña incorrecto" };
+      if (!found) return { ok: false, error: "Correo o contraseña incorrectos" };
       const { password: _p, ...rest } = found;
       setUser(rest);
       localStorage.setItem(SESSION_KEY, found.email);

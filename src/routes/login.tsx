@@ -1,12 +1,31 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, Eye, EyeOff, Info } from "lucide-react";
+import { GraduationCap, Eye, EyeOff, Info, Crown, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
+
+const QUICK_ACCOUNTS = [
+  {
+    email: "instructor@saberhn.hn",
+    password: "instructor1234",
+    label: "Instructor",
+    desc: "Crea y gestiona cursos",
+    icon: Crown,
+    accent: "text-amber-600",
+  },
+  {
+    email: "estudiante@saberhn.hn",
+    password: "estudiante1234",
+    label: "Estudiante",
+    desc: "Aprende nuevas habilidades",
+    icon: User,
+    accent: "text-blue-600",
+  },
+];
 
 function LoginPage() {
   const { login } = useAuth();
@@ -25,10 +44,11 @@ function LoginPage() {
     navigate({ to: "/dashboard" });
   };
 
-  const fillDemo = () => {
-    setEmail("demo@saberhn.hn");
-    setPassword("demo1234");
+  const quickLogin = (acc: (typeof QUICK_ACCOUNTS)[number]) => {
     setError("");
+    const res = login(acc.email, acc.password);
+    if (!res.ok) return setError(res.error || "Error");
+    navigate({ to: "/dashboard" });
   };
 
   return (
@@ -50,29 +70,43 @@ function LoginPage() {
         <h2 className="text-xl font-bold text-foreground">Bienvenido de vuelta</h2>
         <p className="mt-1 text-sm text-muted-foreground">Ingresa a tu cuenta para continuar</p>
 
-        {/* Demo credentials hint */}
-        <button
-          onClick={fillDemo}
-          className="mt-4 flex w-full items-start gap-2.5 rounded-2xl border border-primary/30 bg-primary/5 p-3.5 text-left transition active:scale-[0.98]"
-        >
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15">
-            <Info className="h-4.5 w-4.5 text-primary" />
+        {/* Quick login buttons */}
+        <div className="mt-5 space-y-2.5">
+          <div className="flex items-start gap-2">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <p className="text-xs text-muted-foreground">Acceso rápido con cuentas de demostración:</p>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">Usuario de prueba</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Correo: <span className="font-medium text-foreground">demo@saberhn.hn</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Contraseña: <span className="font-medium text-foreground">demo1234</span>
-            </p>
-          </div>
-          <span className="shrink-0 self-center rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-            Usar
-          </span>
-        </button>
+          {QUICK_ACCOUNTS.map(acc => {
+            const Icon = acc.icon;
+            return (
+              <button
+                key={acc.email}
+                onClick={() => quickLogin(acc)}
+                className="flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3.5 text-left transition active:scale-[0.98]"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/15">
+                  <Icon className={`h-5 w-5 ${acc.accent}`} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">{acc.label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{acc.desc}</p>
+                </div>
+                <span className="shrink-0 self-center rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                  Entrar
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-        <form onSubmit={submit} className="mt-6 space-y-4">
+        {/* Divider */}
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">o ingresa manualmente</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
           {error && (
             <div className="rounded-xl bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive">
               {error}
@@ -117,11 +151,6 @@ function LoginPage() {
             Ingresar
           </Button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" className="font-semibold text-primary">Regístrate</Link>
-        </p>
       </div>
     </div>
   );
