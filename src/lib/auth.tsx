@@ -17,6 +17,7 @@ interface AuthState {
   user: User | null;
   register: (data: StoredUser) => { ok: boolean; error?: string };
   login: (email: string, password: string) => { ok: boolean; error?: string };
+  loginAs: (role: "instructor" | "student") => { ok: boolean; error?: string };
   logout: () => void;
   upgradeToPro: () => void;
   downgradeToNormal: () => void;
@@ -95,6 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { password: _p, ...rest } = found;
       setUser(rest);
       localStorage.setItem(SESSION_KEY, found.email);
+      return { ok: true };
+    },
+    loginAs: (role) => {
+      const demo = DEMO_USERS.find(d => (role === "instructor" ? d.role === "instructor" : d.role === "student"));
+      if (!demo) return { ok: false, error: "Cuenta no disponible" };
+      const { password: _p, ...rest } = demo;
+      setUser(rest);
+      localStorage.setItem(SESSION_KEY, demo.email);
       return { ok: true };
     },
     logout: () => {

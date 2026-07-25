@@ -10,16 +10,14 @@ export const Route = createFileRoute("/login")({ component: LoginPage });
 
 const QUICK_ACCOUNTS = [
   {
-    email: "instructor@saberhn.hn",
-    password: "instructor1234",
+    role: "instructor" as const,
     label: "Instructor",
     desc: "Crea y gestiona cursos",
     icon: Crown,
     accent: "text-amber-600",
   },
   {
-    email: "estudiante@saberhn.hn",
-    password: "estudiante1234",
+    role: "student" as const,
     label: "Estudiante",
     desc: "Aprende nuevas habilidades",
     icon: User,
@@ -28,7 +26,7 @@ const QUICK_ACCOUNTS = [
 ];
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginAs } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +44,7 @@ function LoginPage() {
 
   const quickLogin = (acc: (typeof QUICK_ACCOUNTS)[number]) => {
     setError("");
-    const res = login(acc.email, acc.password);
+    const res = loginAs(acc.role);
     if (!res.ok) return setError(res.error || "Error");
     navigate({ to: "/dashboard" });
   };
@@ -74,13 +72,13 @@ function LoginPage() {
         <div className="mt-5 space-y-2.5">
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p className="text-xs text-muted-foreground">Acceso rápido con cuentas de demostración:</p>
+            <p className="text-xs text-muted-foreground">Entra al instante, sin contraseña:</p>
           </div>
           {QUICK_ACCOUNTS.map(acc => {
             const Icon = acc.icon;
             return (
               <button
-                key={acc.email}
+                key={acc.role}
                 onClick={() => quickLogin(acc)}
                 className="flex w-full items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3.5 text-left transition active:scale-[0.98]"
               >
