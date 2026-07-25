@@ -1,0 +1,9 @@
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+dependsOn = ["install"]
+
+[start]
+cmd = "HOST=0.0.0.0 node .output/server/index.mjs"
