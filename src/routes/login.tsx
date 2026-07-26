@@ -14,14 +14,14 @@ const QUICK_ACCOUNTS = [
     label: "Instructor",
     desc: "Crea y gestiona cursos",
     icon: Crown,
-    accent: "text-zinc-600",
+    accent: "text-slate-600",
   },
   {
     role: "student" as const,
     label: "Estudiante",
     desc: "Aprende nuevas habilidades",
     icon: User,
-    accent: "text-zinc-500",
+    accent: "text-slate-500",
   },
 ];
 
@@ -75,7 +75,7 @@ function LoginPage() {
     <div className="app-shell flex flex-col">
       {/* Splash top */}
       <div className="relative flex flex-col items-center justify-center px-6 pb-10 pt-20 text-center text-white"
-        style={{ background: "linear-gradient(160deg, #52525b 0%, #27272a 100%)" }}>
+        style={{ background: "linear-gradient(160deg, #5a6f90 0%, #2e3a52 100%)" }}>
         <div className="absolute inset-0 opacity-20"
           style={{ background: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
         <div className="relative grid h-20 w-20 place-items-center rounded-3xl bg-white/20 backdrop-blur-sm">
