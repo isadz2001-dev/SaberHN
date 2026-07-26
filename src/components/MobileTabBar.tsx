@@ -162,11 +162,11 @@ export function MobileTabBar({ active, onChange, isInstructor }: Props) {
   );
 }
 
-/* Top app bar for mobile — compact, orange accent */
+/* Top app bar for mobile — compact, gray accent */
 export function MobileTopBar({ title, subtitle, onHome }: { title: string; subtitle?: string; onHome?: () => void }) {
   return (
     <header className="sticky top-0 z-30 bg-primary px-5 pb-3 pt-12 text-white pt-safe"
-      style={{ background: "linear-gradient(160deg, #f97316 0%, #ea580c 100%)" }}>
+      style={{ background: "linear-gradient(160deg, #52525b 0%, #27272a 100%)" }}>
       <div className="flex items-center justify-between">
         <div className="min-w-0">
           <h1 className="truncate text-xl font-bold">{title}</h1>

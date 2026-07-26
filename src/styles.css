@@ -40,32 +40,32 @@
 :root {
   --radius: 1.25rem;
 
-  /* Orange-dominant mobile app palette */
-  --background: #fff8f3;
-  --foreground: #2d1b0e;
+  /* Neutral gray mobile app palette */
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
   --card: #ffffff;
-  --card-foreground: #2d1b0e;
+  --card-foreground: #1a1a1a;
   --popover: #ffffff;
-  --popover-foreground: #2d1b0e;
+  --popover-foreground: #1a1a1a;
 
-  --primary: #f97316;              /* vibrant orange */
+  --primary: #3f3f46;              /* zinc-700 */
   --primary-foreground: #ffffff;
-  --secondary: #fff1e6;            /* soft orange tint */
-  --secondary-foreground: #c2410c;
-  --muted: #fff4ed;
-  --muted-foreground: #9a7b62;
-  --accent: #fb923c;               /* lighter orange accent */
+  --secondary: #e4e4e7;            /* zinc-200 */
+  --secondary-foreground: #3f3f46;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #52525b;               /* zinc-600 */
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #ffe4d1;
-  --input: #ffe4d1;
-  --ring: #f97316;
+  --border: #d4d4d8;
+  --input: #d4d4d8;
+  --ring: #3f3f46;
 
-  --brand: #f97316;
+  --brand: #3f3f46;
   --brand-foreground: #ffffff;
-  --brand-soft: #fff1e6;
-  --accent-warm: #fed7aa;
+  --brand-soft: #e4e4e7;
+  --accent-warm: #d4d4d8;
 }
 
 @layer base {

@@ -14,22 +14,32 @@ const QUICK_ACCOUNTS = [
     label: "Instructor",
     desc: "Crea y gestiona cursos",
     icon: Crown,
-    accent: "text-amber-600",
+    accent: "text-zinc-600",
   },
   {
     role: "student" as const,
     label: "Estudiante",
     desc: "Aprende nuevas habilidades",
     icon: User,
-    accent: "text-blue-600",
+    accent: "text-zinc-500",
   },
 ];
 
 function LoginPage() {
-  const { login, loginAs } = useAuth();
+  const { login, loginAs, register } = useAuth();
   const navigate = useNavigate();
+  const [mode, setMode] = useState<"login" | "register">(() => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("es_register_mode") === "1") {
+      localStorage.removeItem("es_register_mode");
+      return "register";
+    }
+    return "login";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [age, setAge] = useState("");
+  const [role, setRole] = useState<"student" | "instructor">("student");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,6 +47,18 @@ function LoginPage() {
     e.preventDefault();
     setError("");
     if (!email || !password) return setError("Completa todos los campos");
+    if (mode === "register") {
+      if (!fullName) return setError("Ingresa tu nombre completo");
+      const ageNum = parseInt(age, 10);
+      if (!ageNum || ageNum < 5 || ageNum > 120) return setError("Edad inválida");
+      if (password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
+      const res = register({ email, password, fullName, age: ageNum, role });
+      if (!res.ok) return setError(res.error || "Error");
+      const lres = login(email, password);
+      if (!lres.ok) return setError(lres.error || "Error");
+      navigate({ to: "/dashboard" });
+      return;
+    }
     const res = login(email, password);
     if (!res.ok) return setError(res.error || "Error");
     navigate({ to: "/dashboard" });
@@ -51,9 +73,9 @@ function LoginPage() {
 
   return (
     <div className="app-shell flex flex-col">
-      {/* Orange splash top */}
+      {/* Splash top */}
       <div className="relative flex flex-col items-center justify-center px-6 pb-10 pt-20 text-center text-white"
-        style={{ background: "linear-gradient(160deg, #f97316 0%, #ea580c 100%)" }}>
+        style={{ background: "linear-gradient(160deg, #52525b 0%, #27272a 100%)" }}>
         <div className="absolute inset-0 opacity-20"
           style={{ background: "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
         <div className="relative grid h-20 w-20 place-items-center rounded-3xl bg-white/20 backdrop-blur-sm">
@@ -63,10 +85,14 @@ function LoginPage() {
         <p className="relative mt-1.5 text-sm text-white/80">Aprende con expertos locales</p>
       </div>
 
-      {/* Login form card */}
+      {/* Form card */}
       <div className="-mt-6 flex-1 rounded-t-3xl bg-background px-6 pt-8">
-        <h2 className="text-xl font-bold text-foreground">Bienvenido de vuelta</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Ingresa a tu cuenta para continuar</p>
+        <h2 className="text-xl font-bold text-foreground">
+          {mode === "login" ? "Bienvenido de vuelta" : "Crea tu cuenta"}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {mode === "login" ? "Ingresa a tu cuenta para continuar" : "Regístrate para empezar a aprender"}
+        </p>
 
         {/* Quick login buttons */}
         <div className="mt-5 space-y-2.5">
@@ -100,7 +126,9 @@ function LoginPage() {
         {/* Divider */}
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">o ingresa manualmente</span>
+          <span className="text-xs text-muted-foreground">
+            {mode === "login" ? "o ingresa manualmente" : "o regístrate aquí"}
+          </span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
@@ -109,6 +137,53 @@ function LoginPage() {
             <div className="rounded-xl bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive">
               {error}
             </div>
+          )}
+          {mode === "register" && (
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="fullName">Nombre completo</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  maxLength={60}
+                  placeholder="Tu nombre"
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="age">Edad</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={age}
+                  onChange={e => setAge(e.target.value)}
+                  min={5}
+                  max={120}
+                  placeholder="Ej. 25"
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tipo de cuenta</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRole("student")}
+                    className={`flex items-center gap-2 rounded-xl border p-3 text-sm font-medium transition ${role === "student" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    <User className="h-4 w-4" /> Estudiante
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("instructor")}
+                    className={`flex items-center gap-2 rounded-xl border p-3 text-sm font-medium transition ${role === "instructor" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    <Crown className="h-4 w-4" /> Instructor
+                  </button>
+                </div>
+              </div>
+            </>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="email">Correo electrónico</Label>
@@ -134,7 +209,7 @@ function LoginPage() {
                 maxLength={40}
                 placeholder="Mínimo 6 caracteres"
                 className="h-12 rounded-xl pr-11"
-                autoComplete="current-password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
               />
               <button
                 type="button"
@@ -146,9 +221,27 @@ function LoginPage() {
             </div>
           </div>
           <Button type="submit" size="lg" className="h-12 w-full rounded-xl text-base font-semibold">
-            Ingresar
+            {mode === "login" ? "Ingresar" : "Crear cuenta"}
           </Button>
         </form>
+
+        <div className="mt-5 text-center text-sm text-muted-foreground">
+          {mode === "login" ? (
+            <>
+              ¿No tienes cuenta?{" "}
+              <button onClick={() => { setMode("register"); setError(""); }} className="font-semibold text-primary">
+                Regístrate
+              </button>
+            </>
+          ) : (
+            <>
+              ¿Ya tienes cuenta?{" "}
+              <button onClick={() => { setMode("login"); setError(""); }} className="font-semibold text-primary">
+                Inicia sesión
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

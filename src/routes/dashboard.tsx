@@ -142,7 +142,7 @@ function ExploreTab({ onSelectCourse }: { onSelectCourse: (c: Course) => void })
               <Card key={c.id} className="overflow-hidden transition active:scale-[0.98]" onClick={() => onSelectCourse(c)}>
                 <div className="relative h-36 bg-cover bg-center" style={{ backgroundImage: `url(${c.image})` }}>
                   {c.featured && !c.builtin && (
-                    <span className="absolute left-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-950 shadow">Destacado</span>
+                    <span className="absolute left-2 top-2 rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-bold text-white shadow">Destacado</span>
                   )}
                   {!c.featured && !c.builtin && (
                     <span className="absolute left-2 top-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-bold text-white shadow">Nuevo</span>
@@ -152,7 +152,7 @@ function ExploreTab({ onSelectCourse }: { onSelectCourse: (c: Course) => void })
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">{c.category} · {c.level}</p>
                     {(avg > 0 || c.rating) && (
-                      <span className="flex items-center gap-1 text-xs font-medium text-amber-600">
+                      <span className="flex items-center gap-1 text-xs font-medium text-zinc-600">
                         <Star className="h-3 w-3 fill-current" />{avg > 0 ? avg.toFixed(1) : c.rating}
                         {count > 0 && <span className="text-muted-foreground">({count})</span>}
                       </span>
@@ -269,7 +269,7 @@ function CourseDetailPage({ course, onBack }: { course: Course; onBack: () => vo
         {/* Sticky header */}
         <header
           className="sticky top-0 z-30 px-5 pb-4 pt-12 text-white pt-safe"
-          style={{ background: "linear-gradient(160deg, #f97316 0%, #ea580c 100%)" }}
+          style={{ background: "linear-gradient(160deg, #52525b 0%, #27272a 100%)" }}
         >
           <div className="flex items-center gap-3">
             <button
@@ -608,7 +608,7 @@ function RatingPanel({ courseId, isOwner, myRating, avg, count }: { courseId: st
             {[1, 2, 3, 4, 5].map(n => (
               <button key={n} onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
                 onClick={() => store.setRating(courseId, user.email, n)}>
-                <Star className={`h-8 w-8 ${n <= (hover || myRating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
+                <Star className={`h-8 w-8 ${n <= (hover || myRating) ? "fill-zinc-800 text-zinc-800" : "text-muted-foreground"}`} />
               </button>
             ))}
           </div>
@@ -628,7 +628,7 @@ function RatingPanel({ courseId, isOwner, myRating, avg, count }: { courseId: st
                     <p className="text-sm font-medium">{p?.fullName ?? email}</p>
                     <p className="text-xs text-muted-foreground">{email}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center gap-1 text-zinc-600">
                     {Array.from({ length: score }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
                   </div>
                 </div>
@@ -713,7 +713,7 @@ function TeachTab() {
               <Card key={c.id}>
                 <div className="relative h-28 rounded-t-lg bg-cover bg-center" style={{ backgroundImage: `url(${c.image})` }}>
                   {c.featured && (
-                    <span className="absolute left-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-950 shadow">Destacado</span>
+                    <span className="absolute left-2 top-2 rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-bold text-white shadow">Destacado</span>
                   )}
                   {!c.featured && (
                     <span className="absolute left-2 top-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-bold text-white shadow">Nuevo</span>
@@ -962,10 +962,10 @@ function PlansTab() {
         </Card>
 
         {/* Plan Pro */}
-        <Card className={isPro ? "border-primary" : "border-amber-400/60"}>
+        <Card className={isPro ? "border-primary" : "border-zinc-400/60"}>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-amber-100 text-amber-600"><Crown className="h-5 w-5" /></div>
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-200 text-zinc-700"><Crown className="h-5 w-5" /></div>
               <div>
                 <p className="text-lg font-semibold">Instructor Pro</p>
                 <p className="text-xs text-muted-foreground">Destaca entre los demás y accede a herramientas premium</p>
@@ -978,9 +978,9 @@ function PlansTab() {
             <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
               <Zap className="h-3 w-3" />3 meses gratis de prueba
             </p>
-            <div className="mt-5 flex items-center justify-between rounded-lg border border-amber-400/40 bg-amber-50 p-3">
+            <div className="mt-5 flex items-center justify-between rounded-lg border border-zinc-400/40 bg-zinc-100 p-3">
               <div className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-amber-500" />
+                <Crown className="h-5 w-5 text-zinc-600" />
                 <div>
                   <p className="text-sm font-semibold">Plan Pro {isPro ? "activo" : "inactivo"}</p>
                   <p className="text-xs text-muted-foreground">Enciende para ver todos los beneficios</p>
@@ -992,7 +992,7 @@ function PlansTab() {
               <ul className="space-y-2.5">
                 {proFeatures.map(f => (
                   <li key={f} className="flex items-start gap-2 text-sm">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />{f}
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-zinc-600" />{f}
                   </li>
                 ))}
               </ul>
@@ -1002,15 +1002,15 @@ function PlansTab() {
       </div>
 
       {!isPro && (
-        <div className="rounded-lg border border-amber-400/40 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="rounded-lg border border-zinc-400/40 bg-zinc-100 p-4 text-sm text-zinc-800">
           <p className="font-medium"><TrendingUp className="mr-1.5 inline h-4 w-4" />¿Por qué pasar a Pro?</p>
-          <p className="mt-1 text-amber-800">Tus cursos aparecerán con la etiqueta <strong className="text-amber-600">Destacado</strong> en amarillo y se mostrarán en los primeros lugares del catálogo. Los instructores normales solo reciben la etiqueta <strong className="text-blue-600">Nuevo</strong> y aparecen al final. Además, tendrás acceso a estadísticas detalladas de tus alumnos.</p>
+          <p className="mt-1 text-zinc-700">Tus cursos aparecerán con la etiqueta <strong className="text-zinc-800">Destacado</strong> en gris y se mostrarán en los primeros lugares del catálogo. Los instructores normales solo reciben la etiqueta <strong className="text-zinc-600">Nuevo</strong> y aparecen al final. Además, tendrás acceso a estadísticas detalladas de tus alumnos.</p>
         </div>
       )}
 
       {isPro && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
-          <p className="flex items-center gap-2 text-sm font-medium"><Award className="h-4 w-4 text-amber-500" />Tu plan Pro está activo</p>
+          <p className="flex items-center gap-2 text-sm font-medium"><Award className="h-4 w-4 text-zinc-600" />Tu plan Pro está activo</p>
           <p className="mt-1 text-xs text-muted-foreground">Tus cursos se publican con etiqueta “Destacado”, aparecen en los primeros lugares y tienes acceso a estadísticas de alumnos.</p>
         </div>
       )}
@@ -1276,7 +1276,7 @@ function StoriesTab() {
                 <p className="text-xs text-muted-foreground">{s.age} años · {s.city}</p>
                 <div className="mt-1 flex items-center gap-0.5">
                   {Array.from({ length: s.rating }).map((_, idx) => (
-                    <Star key={idx} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    <Star key={idx} className="h-3.5 w-3.5 fill-zinc-800 text-zinc-800" />
                   ))}
                 </div>
               </div>

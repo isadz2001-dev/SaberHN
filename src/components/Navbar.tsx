@@ -83,7 +83,8 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login"><Button size="sm">Ingresar</Button></Link>
+              <Link to="/login"><Button variant="ghost" size="sm">Ingresar</Button></Link>
+              <Link to="/login"><Button size="sm" onClick={() => localStorage.setItem("es_register_mode", "1")}>Registrarme</Button></Link>
             </>
           )}
         </nav>
